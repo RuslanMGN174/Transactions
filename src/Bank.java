@@ -1,22 +1,27 @@
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Bank {
     private HashMap<String, Account> accounts;
     private final Random random = new Random();
-    private HashMap<String, Long> accountNumbers;
+    private List<Account> accountNumbers;
+//    private HashMap<String, Long> accountNumbers;
 
     public Bank(HashMap<String, Account> accounts) {
         this.accounts = accounts;
-        createAccountNumberList(accounts);
+//        createAccountNumberList(accounts);
     }
 
-    private void createAccountNumberList (Map<String, Account> accounts){
+    private void createAccountNumberList(List<Account> accountNumbers) {
         accounts.keySet()
                 .forEach(name ->
-                        accountNumbers.put(accounts.get(name).getAccNumber(), accounts.get(name).getMoney()));
+                        accountNumbers.add(
+                                new Account(accounts.get(name).getMoney(), accounts.get(name).getAccNumber()
+                                )
+                        )
+                );
     }
 
     public synchronized boolean isFraud(String fromAccountNum, String toAccountNum, long amount)
@@ -33,7 +38,15 @@ public class Bank {
      * счетов (как – на ваше усмотрение)
      */
     public void transfer(String fromAccountNum, String toAccountNum, long amount) {
-        int index = random.nextInt(accountNumbers.size());
+        try {
+//            accountNumbers.put(toAccountNum, accountNumbers.get(toAccountNum) + amount);
+//            accountNumbers.put(fromAccountNum, accountNumbers.get(fromAccountNum) - amount);
+            if (amount > 50000) {
+                isFraud(fromAccountNum, toAccountNum, amount);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -43,9 +56,11 @@ public class Bank {
     public long getBalance(String accountNum) {
         AtomicLong money = new AtomicLong();
         accounts.keySet()
-                .forEach(name -> {if (accounts.get(name).getAccNumber().equals(accountNum)){
-                    money.set(accounts.get(name).getMoney());
-                }});
+                .forEach(name -> {
+                    if (accounts.get(name).getAccNumber().equals(accountNum)) {
+                        money.set(accounts.get(name).getMoney());
+                    }
+                });
 
         return money.get();
     }
