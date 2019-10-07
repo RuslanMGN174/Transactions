@@ -4,27 +4,17 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Bank {
-    private HashMap<String, Account> accounts;
+    //    private HashMap<String, Long> accounts;
+    private List<Account> accounts;
+    //    private CopyOnWriteArrayList<Account> accounts;
     private final Random random = new Random();
-    private List<Account> accountNumbers;
-//    private HashMap<String, Long> accountNumbers;
+    private HashMap<String, Long> accountNumbers;
 
-    public Bank(HashMap<String, Account> accounts) {
+    public Bank(List<Account> accounts) {
         this.accounts = accounts;
-//        createAccountNumberList(accounts);
     }
 
-    private void createAccountNumberList(List<Account> accountNumbers) {
-        accounts.keySet()
-                .forEach(name ->
-                        accountNumbers.add(
-                                new Account(accounts.get(name).getMoney(), accounts.get(name).getAccNumber()
-                                )
-                        )
-                );
-    }
-
-    public synchronized boolean isFraud(String fromAccountNum, String toAccountNum, long amount)
+    private synchronized boolean isFraud()
             throws InterruptedException {
         Thread.sleep(1000);
         return random.nextBoolean();
@@ -37,17 +27,48 @@ public class Bank {
      * метод isFraud. Если возвращается true, то делается блокировка
      * счетов (как – на ваше усмотрение)
      */
-    public void transfer(String fromAccountNum, String toAccountNum, long amount) {
-        try {
-//            accountNumbers.put(toAccountNum, accountNumbers.get(toAccountNum) + amount);
-//            accountNumbers.put(fromAccountNum, accountNumbers.get(fromAccountNum) - amount);
-            if (amount > 50000) {
-                isFraud(fromAccountNum, toAccountNum, amount);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    public void transfer(String fromAccountNum, String toAccountNum, long amount) throws InterruptedException {
+        Account accountFrom = null;
+        Account accountTo = null;
+        for (int i = 0; i < accounts.size(); i++) {
+            if (accounts.get(i).isExist() && !accounts.get(i).isBlocked())
+                if (accounts.get(i).getAccNumber().equals(fromAccountNum)) {
+                    accountFrom = accounts.get(i);
+                }
+            if (accounts.get(i).isExist() && !accounts.get(i).isBlocked())
+                if (accounts.get(i).getAccNumber().equals(toAccountNum)) {
+                    accountTo = accounts.get(i);
+                }
         }
 
+        if (accountFrom.getMoney() <= amount) {
+            amount = accountFrom.getMoney();
+        }
+
+        synchronized (this) {
+
+            accountFrom = new Account(accountFrom.getAccNumber(), accountFrom.getMoney() - amount);
+        accountTo = new Account(accountTo.getAccNumber(), accountTo.getMoney() + amount);
+
+        if (amount > 50000) {
+            if (isFraud()) {
+                accountFrom.setBlocked(true);
+                accountTo.setBlocked(true);
+            }
+        }
+
+            accountsRefresh(accountFrom);
+            accountsRefresh(accountTo);
+        }
+    }
+
+    private void accountsRefresh(Account account) {
+        for (int i = 0; i < accounts.size(); i++) {
+            if (accounts.get(i).getAccNumber().equals(account.getAccNumber())) {
+                accounts.set(i, new Account(account.getAccNumber(), account.getMoney()));
+                accounts.get(i).setBlocked(account.isBlocked());
+            }
+        }
     }
 
     /**
@@ -55,23 +76,12 @@ public class Bank {
      */
     public long getBalance(String accountNum) {
         AtomicLong money = new AtomicLong();
-        accounts.keySet()
-                .forEach(name -> {
-                    if (accounts.get(name).getAccNumber().equals(accountNum)) {
-                        money.set(accounts.get(name).getMoney());
-                    }
-                });
+        accounts.forEach(accountNumber -> {
+            if (accountNumber.getAccNumber().equals(accountNum)) {
+                money.set(accountNumber.getMoney());
+            }
+        });
 
         return money.get();
     }
-
-//    private boolean isAccountExist(String accountNum) {
-//        boolean flag = false;
-//        for (String name : accounts.keySet()) {
-//            if (accounts.get(name).getAccNumber().equals(accountNum)){
-//                flag = true;
-//            }
-//        }
-//        return flag;
-//    }
 }

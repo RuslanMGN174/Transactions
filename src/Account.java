@@ -1,26 +1,43 @@
 public class Account
 {
-    private long money;
+    private Long money;
     private String accNumber;
+    private boolean blocked;
+    private String status;
+    private boolean exist = false;
 
-    public Account(long money, String accNumber) {
+    protected Account(String accNumber, Long money) {
         this.money = money;
         this.accNumber = accNumber;
+        exist = true;
     }
 
-    public long getMoney() {
+    protected long getMoney() {
         return money;
     }
 
-    public void setMoney(long money) {
+    protected void setMoney(long money) {
         this.money = money;
     }
 
-    public String getAccNumber() {
+    protected String getAccNumber() {
         return accNumber;
     }
 
-    public void setAccNumber(String accNumber) {
-        this.accNumber = accNumber;
+    protected boolean isBlocked() {
+        return blocked;
     }
+
+    protected void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
+
+    protected String getStatus() {
+        return isBlocked() ? "blocked" : "not blocked";
+    }
+
+    protected boolean isExist() {
+        return exist;
+    }
+
 }
