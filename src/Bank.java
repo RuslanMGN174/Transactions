@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Bank {
     private List<Account> accounts;
     private final Random random = new Random();
-    private List<Integer> blockedAccounts = new ArrayList<>();
+    private List<Account> blockedAccounts = new ArrayList<>();
 
     Bank(List<Account> accounts) {
         this.accounts = accounts;
@@ -43,11 +43,11 @@ public class Bank {
                 if (isFraud()) {
                     accountFrom.setBlocked(true);
                     System.out.printf("Счет №%s %s \n", accountFrom.getAccNumber(), accountFrom.getStatus());
-                    blockedAccounts.add(accountFromIndex);
+                    blockedAccounts.add(accountFrom);
 
                     accountTo.setBlocked(true);
                     System.out.printf("Счет №%s %s \n", accountTo.getAccNumber(), accountTo.getStatus());
-                    blockedAccounts.add(accountToIndex);
+                    blockedAccounts.add(accountTo);
                 }
             }
         }
@@ -69,6 +69,7 @@ public class Bank {
 
     void printBlockedAccounts() {
         Collections.sort(blockedAccounts);
-        blockedAccounts.forEach(System.out::println);
+        blockedAccounts.forEach(account ->
+                System.out.printf("%3s %6s %s \n", account.getAccNumber(), account.getMoney(), account.getStatus()));
     }
 }

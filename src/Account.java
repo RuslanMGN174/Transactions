@@ -1,5 +1,4 @@
-public class Account
-{
+public class Account implements Comparable<Account> {
     private volatile Long money;
     private volatile boolean blocked;
 
@@ -33,5 +32,10 @@ public class Account
 
     protected String getStatus() {
         return isBlocked() ? "blocked" : "not blocked";
+    }
+
+    @Override
+    public int compareTo(Account o) {
+        return Integer.valueOf(accNumber).compareTo(Integer.valueOf(o.getAccNumber())) ;
     }
 }
