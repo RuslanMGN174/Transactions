@@ -4,10 +4,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Bank {
     private List<Account> accounts;
     private final Random random = new Random();
-    private HashMap<String, Long> accountNumbers;
     private List<Integer> blockedAccounts = new ArrayList<>();
 
-    public Bank(List<Account> accounts) {
+    Bank(List<Account> accounts) {
         this.accounts = accounts;
     }
 
@@ -24,7 +23,7 @@ public class Bank {
      * метод isFraud. Если возвращается true, то делается блокировка
      * счетов (как – на ваше усмотрение)
      */
-    public synchronized void transfer(String fromAccountNum, String toAccountNum, long amount) throws InterruptedException {
+    synchronized void transfer(String fromAccountNum, String toAccountNum, long amount) throws InterruptedException {
         int accountFromIndex = Integer.valueOf(fromAccountNum);
         int accountToIndex = Integer.valueOf(toAccountNum);
         Account accountFrom = accounts.get(accountFromIndex);
@@ -35,6 +34,7 @@ public class Bank {
             if (accountFrom.getMoney() <= amount) {
                 amount = accountFrom.getMoney();
             }
+
             accountFrom.setMoney(accountFrom.getMoney() - amount);
             accountTo.setMoney(accountTo.getMoney() + amount);
 
@@ -42,17 +42,16 @@ public class Bank {
                 System.out.println("Транзакция направлена на проверку...");
                 if (isFraud()) {
                     accountFrom.setBlocked(true);
-                    System.out.printf("Счет №%s %s %s \n", accountFrom.getAccNumber(), accountFrom.getStatus(), accountFrom.isBlocked());
+                    System.out.printf("Счет №%s %s \n", accountFrom.getAccNumber(), accountFrom.getStatus());
                     blockedAccounts.add(accountFromIndex);
 
                     accountTo.setBlocked(true);
-                    System.out.printf("Счет №%s %s %s \n", accountTo.getAccNumber(), accountTo.getStatus(), accountTo.isBlocked());
+                    System.out.printf("Счет №%s %s \n", accountTo.getAccNumber(), accountTo.getStatus());
                     blockedAccounts.add(accountToIndex);
                 }
             }
         }
     }
-
 
     /**
      * TODO: реализовать метод. Возвращает остаток на счёте.
@@ -68,7 +67,7 @@ public class Bank {
         return money.get();
     }
 
-    public void printBlockedAccounts() {
+    void printBlockedAccounts() {
         Collections.sort(blockedAccounts);
         blockedAccounts.forEach(System.out::println);
     }
