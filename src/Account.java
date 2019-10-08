@@ -1,15 +1,14 @@
 public class Account
 {
-    private Long money;
+    private volatile Long money;
+    private volatile boolean blocked;
+
     private String accNumber;
-    private boolean blocked;
     private String status;
-    private boolean exist = false;
 
     protected Account(String accNumber, Long money) {
         this.money = money;
         this.accNumber = accNumber;
-        exist = true;
     }
 
     protected long getMoney() {
@@ -35,9 +34,4 @@ public class Account
     protected String getStatus() {
         return isBlocked() ? "blocked" : "not blocked";
     }
-
-    protected boolean isExist() {
-        return exist;
-    }
-
 }
